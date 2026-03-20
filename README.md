@@ -92,3 +92,6 @@ Requires `gcc-multilib` / `g++-multilib` for 32-bit compilation.
 
 - Linux CS:GO server (32-bit)
 - SourceMod 1.10 or 1.11
+
+License:
+MIT
