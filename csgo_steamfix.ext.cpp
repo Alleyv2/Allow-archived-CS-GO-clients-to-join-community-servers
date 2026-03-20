@@ -63,7 +63,7 @@ static const uint8_t *find_sig(const uint8_t *base, size_t size)
         size_t i = 0;
         for (; i < SIG_LEN; ++i)
             if ((p[i] & MASK[i]) != (SIG[i] & MASK[i])) break;
-            if (i == SIG_LEN) return p;
+        if (i == SIG_LEN) return p;
     }
     return nullptr;
 }
@@ -76,14 +76,14 @@ static int phdr_cb(struct dl_phdr_info *info, size_t, void *data)
         return 0;
     auto *ei = static_cast<EngineInfo*>(data);
     ei->base = reinterpret_cast<const uint8_t*>(
-        static_cast<uintptr_t>(info->dlpi_addr));
+                   static_cast<uintptr_t>(info->dlpi_addr));
     for (int i = 0; i < info->dlpi_phnum; ++i)
         if (info->dlpi_phdr[i].p_type == PT_LOAD) {
             uintptr_t end = info->dlpi_phdr[i].p_vaddr
-            + info->dlpi_phdr[i].p_memsz;
+                          + info->dlpi_phdr[i].p_memsz;
             if (end > ei->size) ei->size = end;
         }
-        return 1;
+    return 1;
 }
 
 /* Попробовать найти движок через dlopen если phdr не нашёл */
@@ -96,7 +96,7 @@ static void try_find_via_dlopen(EngineInfo *ei)
     struct link_map *lm = nullptr;
     if (dlinfo(h, RTLD_DI_LINKMAP, &lm) == 0 && lm) {
         ei->base = reinterpret_cast<const uint8_t*>(
-            static_cast<uintptr_t>(lm->l_addr));
+                       static_cast<uintptr_t>(lm->l_addr));
         /* Размер поставим большой — просканируем 64MB */
         ei->size = 0x4000000;
     }
@@ -176,41 +176,41 @@ class CSGOSteamFix : public IExtensionInterface
 public:
     bool OnExtensionLoad(IExtension *me, IShareSys *sys,
                          char *error, size_t maxlength, bool late) override
-                         {
-                             printf("[steamfix] loading..\n");
+    {
+        printf("[steamfix] loading..\n");
 
-                             /* Если late load — патчим сразу, движок уже загружен */
-                             if (late) {
-                                 return do_patch(error, maxlength);
-                             }
-                             return true;
-                         }
+        /* Если late load — патчим сразу, движок уже загружен */
+        if (late) {
+            return do_patch(error, maxlength);
+        }
+        return true;
+    }
 
-                         void OnExtensionUnload() override { do_unpatch(); }
+    void OnExtensionUnload() override { do_unpatch(); }
 
-                         /* Вызывается после того как все модули загружены — движок точно есть */
-                         void OnExtensionsAllLoaded() override
-                         {
-                             if (!g_patched) {
-                                 char err[256] = {};
-                                 if (!do_patch(err, sizeof(err))) {
-                                     printf("[steamfix] ERROR: %s\n", err);
-                                 }
-                             }
-                         }
+    /* Вызывается после того как все модули загружены — движок точно есть */
+    void OnExtensionsAllLoaded() override
+    {
+        if (!g_patched) {
+            char err[256] = {};
+            if (!do_patch(err, sizeof(err))) {
+                printf("[steamfix] ERROR: %s\n", err);
+            }
+        }
+    }
 
-                         void OnExtensionPauseChange(bool) override  { }
-                         bool QueryRunning(char*, size_t) override   { return true; }
-                         bool IsMetamodExtension() override          { return false; }
-                         void OnDependenciesDropped() override       { }
+    void OnExtensionPauseChange(bool) override  { }
+    bool QueryRunning(char*, size_t) override   { return true; }
+    bool IsMetamodExtension() override          { return false; }
+    void OnDependenciesDropped() override       { }
 
-                         const char *GetExtensionName()        override { return "CS:GO Steam Fix"; }
-                         const char *GetExtensionURL()         override { return "https://github.com/eonexdev/csgo-sv-fix-engine"; }
-                         const char *GetExtensionTag()         override { return "steamfix"; }
-                         const char *GetExtensionAuthor()      override { return "opensource"; }
-                         const char *GetExtensionVerString()   override { return "1.0.0"; }
-                         const char *GetExtensionDescription() override { return "Allow archived CS:GO clients to join"; }
-                         const char *GetExtensionDateString()  override { return __DATE__; }
+    const char *GetExtensionName()        override { return "CS:GO Steam Fix"; }
+    const char *GetExtensionURL()         override { return "https://github.com/eonexdev/csgo-sv-fix-engine"; }
+    const char *GetExtensionTag()         override { return "steamfix"; }
+    const char *GetExtensionAuthor()      override { return "opensource"; }
+    const char *GetExtensionVerString()   override { return "1.0.0"; }
+    const char *GetExtensionDescription() override { return "Allow archived CS:GO clients to join"; }
+    const char *GetExtensionDateString()  override { return __DATE__; }
 };
 
 static CSGOSteamFix g_Extension;
